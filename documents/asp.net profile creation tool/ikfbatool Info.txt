@@ -1,0 +1,35 @@
+﻿##created by ingo karstein (ikarstein >AT< hotmail.com)
+
+
+#create user
+cu username password email question answer 
+
+#create role
+cr rolename
+
+#list users
+lu
+
+#list roles
+lr
+
+#add user to role
+au username rolename
+
+#list user roles
+ur username
+
+#delete user
+du username
+
+#delete role
+dr rolename
+
+#delete user from role  ("role remove")
+rr username rolename
+
+#reset password
+rp username [answer]
+
+#unlock user ("UNlock user")
+un username

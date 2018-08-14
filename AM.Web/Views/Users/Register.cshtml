@@ -1,0 +1,19 @@
+﻿@model AM.Web.Models.UniversalViewModel
+@using PJX.Core.Extensions
+
+@{
+    ViewBag.Title = Model.ViewMode.ToString();
+}
+
+@*<h2>Create</h2>*@
+
+@Html.Action("CreateForm", "users", new { area = "", model = Model })
+
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

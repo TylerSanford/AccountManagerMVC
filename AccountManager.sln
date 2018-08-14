@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Model", "AM.Model\AM.Model.csproj", "{57BAA5BD-7C59-4188-B27C-A50761007792}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Web", "AM.Web\AM.Web.csproj", "{8B6B9315-40C9-4A21-B266-FDF8CE347610}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PJX.Core", "..\..\PROJEX\PROJEX Core 2.0\PJX.Core\PJX.Core.csproj", "{F3ECBDAE-90E3-44B5-BA08-C8044FEC60B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57BAA5BD-7C59-4188-B27C-A50761007792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57BAA5BD-7C59-4188-B27C-A50761007792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57BAA5BD-7C59-4188-B27C-A50761007792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57BAA5BD-7C59-4188-B27C-A50761007792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B6B9315-40C9-4A21-B266-FDF8CE347610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B6B9315-40C9-4A21-B266-FDF8CE347610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B6B9315-40C9-4A21-B266-FDF8CE347610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B6B9315-40C9-4A21-B266-FDF8CE347610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3ECBDAE-90E3-44B5-BA08-C8044FEC60B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3ECBDAE-90E3-44B5-BA08-C8044FEC60B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3ECBDAE-90E3-44B5-BA08-C8044FEC60B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3ECBDAE-90E3-44B5-BA08-C8044FEC60B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {CA7E6EF7-5BD7-4182-A245-F4E5BAED62DD}
+	EndGlobalSection
+EndGlobal

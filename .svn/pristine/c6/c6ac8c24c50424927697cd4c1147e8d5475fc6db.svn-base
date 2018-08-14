@@ -1,0 +1,77 @@
+﻿@model AM.Web.Models.UniversalViewModel
+@using AM.Model
+@{
+    ViewBag.Title = "Account Login -";
+    Layout = "~/Areas/Account/Views/Shared/_Layout.cshtml";
+}
+
+@using (Html.BeginForm("index", "signin", new { area = "account", ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { id = "l-login", @class = "l-block toggled", autocomplete = "on" })) {
+    <div class="lb-header palette-Teal bg">
+        <i class="zmdi zmdi-account-circle"></i>
+        Welcome! Sign in below to get started.
+    </div>
+    <div class="lb-body">
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-warning", role = "alert" })
+        @Html.Hidden("IsLogin", true, new { })
+        <div class="form-group fg-float">
+            <div class="fg-line">
+                @Html.TextBoxFor(m => m.UserName, new { @class = "input-sm form-control fg-input" })
+                <label class="fg-label">Username</label>
+            </div>
+        </div>
+        <div class="form-group fg-float">
+            <div class="fg-line">
+                @Html.PasswordFor(m => m.Password, new { @class = "input-sm form-control fg-input" })
+                <label class="fg-label">Password</label>
+            </div>
+        </div>
+        <button class="btn palette-Teal bg" type="submit">Sign in</button>
+    </div>
+}
+
+@section BottomScripts {
+    <script>
+        $("#l-login").on("submit", function () {
+            var form = $(this);
+            var btn = form.find("button[type=submit]");
+
+            if (btn.attr("disabled") !== "disabled") {
+                var data = {
+                    UserName: $("#UserName").val(),
+
+                    IsLogin: true,
+                    IsAuthCheck: false
+                };
+
+                // send auth check (for field validation)
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("authcheck", "signin", new { area = "account" })',
+                    data: data,
+                    cache: false,
+                    success: function (result) {
+                        if (result.IsSuccess) { // everything checks out, let the login follow through like normal
+                            form.off("submit").submit();
+                        } else { // invalid login (field validity)
+                            $("#l-login button[type=submit]").attr("disabled", "disabled");
+
+                            if (result.StatusMessage !== "" ||
+                                result.StatusMessage !== null ||
+                                result.StatusMessage !== NaN)
+                                alert(result.StatusMessage);
+                            else
+                                alert("Username or password is not valid. Please try again.");
+                        }
+                    },
+                    fail: function (result) {
+                        $("#l-login button[type=submit]").attr("disabled", "disabled");
+                        alert("Username or password is not valid. Please try again.");
+                    }
+                });
+            }
+
+            return false;
+        });
+    </script>
+}

@@ -1,0 +1,29 @@
+﻿using Foolproof;
+using PJX.Core.Enums;
+using AM.Model;
+using AM.Model.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Web;
+
+namespace AM.Web.Models {
+    public class UniversalViewModel {
+
+        public UniversalViewModel() {
+        }
+
+        #region Login Details
+
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public bool RememberMe { get; set; }
+
+        public bool IsLogin { get; set; }
+        public bool IsAuthCheck { get; set; }
+
+        #endregion
+
+    }
+}

@@ -1,0 +1,57 @@
+﻿@using AM.Web.Models
+@using PJX.Core.Extensions
+@model UniversalViewModel
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("create", "users", new { area = "" }, FormMethod.Post, new { @class = "form" })) {
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.ViewMode)
+
+    <div class="form-horizontal">
+        <h4>@Model.ViewMode a new account.</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+            </div>
+        </div>
+        @if (Model.ViewMode == AM.Model.Enums.ViewModes.Create) {
+            <div class="form-group">
+                @Html.LabelFor(m => m.SelectedRole, new { @class = "col-md-2 control-label" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(m => m.SelectedRole, Model.UserRoleList, "Choose a Role..", new { @class = "form-control" })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+
+        @if (Model.StatusMsg.IsNotNullOrWhiteSpace()) {
+            <div class="form-group">
+                @Model.StatusMsg
+
+            </div>
+        }
+
+    </div>
+}

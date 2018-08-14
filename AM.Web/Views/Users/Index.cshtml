@@ -1,0 +1,59 @@
+﻿@model AM.Web.Models.UniversalViewModel
+@using PJX.Core.Extensions
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "create", "users", new { area = "" }, new { })
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Email
+        </th>
+        <th>
+            Active
+        </th>
+        <th>
+            Roles
+        </th>
+        <th>
+            Register Date
+        </th>
+        <th></th>
+    </tr>
+    @foreach (MembershipUser item in Model.aspnet_Users) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsApproved)
+            </td>
+            <td>
+                @String.Join(", ", item.Roles())
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreationDate)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "edit", new { guid = item.ProviderUserKey.ToString() }) |
+               @* @Html.ActionLink("Details", "details", new { guid = item.ProviderUserKey.ToString() }) |*@
+                @Html.ActionLink("Delete", "delete", new { guid = item.ProviderUserKey.ToString() })
+            </td>
+        </tr>
+    }
+
+</table>
+
+@section scripts{
+    @if (Model.IsSuccess) {
+        <script>
+            toastr.success("Account Successfully Created!");
+        </script>
+    }
+}
