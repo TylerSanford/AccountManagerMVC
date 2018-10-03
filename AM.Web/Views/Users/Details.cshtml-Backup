@@ -1,0 +1,41 @@
+﻿@model AM.Web.Models.UniversalViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>aspnet_Users</h4>
+    <hr />
+    <dl class="dl-horizontal">
+      
+
+        <dt>
+            @Html.DisplayNameFor(model => model.aspnet_User.UserName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.aspnet_User.UserName)
+        </dd>
+
+       
+
+
+        <dt>
+            @Html.DisplayNameFor(model => model.aspnet_User.LastActivityDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.aspnet_User.LastActivityDate)
+        </dd>
+
+   
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { guid = Model.Guid }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

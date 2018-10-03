@@ -74,6 +74,9 @@
       <DependentUpon>AM_Entities.tt</DependentUpon>
     </Compile>
     <Compile Include="Enums.cs" />
+    <Compile Include="Profile.cs">
+      <DependentUpon>AM_Entities.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

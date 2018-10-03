@@ -16,27 +16,77 @@ namespace AM.Web.Controllers {
         private AM_Entities db = new AM_Entities();
 
         // GET: User
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         public ActionResult Index(UniversalViewModel model) {
+            //if (option == "Email") {
+            //    return View(db.aspnet_Users.Where(x => x.aspnet_Membership.Email.StartsWith(search) || search == null).ToList());
+            //} else if (option == "Role") {
+            //    return View(Roles.GetUsersInRole(search).ToList());
+            //} else {
+
             // Entity Framework Way
             //var aspnet_Users = db.aspnet_Users.Include(a => a.aspnet_Membership);
-            model.aspnet_Users = Membership.GetAllUsers();
+            // Membership provider - dont use in the end. Convert to array, convert to list, convert to list of entity framework entity users
+
+            model.SearchString = model.SearchString.ToString("").ToLower();
+
+            if (model.ClearSearch.IsNull()) {
+
+                if (model.SearchOption == AM.Model.Enums.SearchOptions.None) {
+                    model.aspnet_Users = Membership.GetAllUsers().ToList();
+                } else if (model.SearchOption == AM.Model.Enums.SearchOptions.Email) {
+                    //model.aspnet_Users = Membership.FindUsersByName(search).ToList();
+
+                    model.aspnet_Users = db.aspnet_Users.Where(u => u.LoweredUserName.Contains(model.SearchString)).ToList().Select(u => Membership.GetUser(u.UserName)).ToList();
+                    model.IsSuccess = true;
+                } else if (model.SearchOption == AM.Model.Enums.SearchOptions.Role) {
+                    try {
+                        //model.aspnet_Users = Roles.GetUsersInRole(search).Select(u => Membership.GetUser(u)).ToList();
+
+                        model.aspnet_Users = db.aspnet_Users.Where(u => u.aspnet_Roles.Any(r => r.LoweredRoleName.Contains(model.SearchString))).ToList().Select(u => Membership.GetUser(u.UserName)).ToList();
+
+                        model.IsSuccess = true;
+
+                    } catch (Exception ex) {
+                        model.aspnet_Users = Membership.GetAllUsers().ToList();
+                        model.IsSuccess = false;
+                        model.StatusMsg = "Error: " + ex.Message;
+                    }
+                }
+            } else {
+                model.SearchString = "";
+                model.aspnet_Users = Membership.GetAllUsers().ToList();
+
+            }
+
+            if (Request.IsAjaxRequest()) {
+                return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, SearchString = model.SearchString, SearchOption = model.SearchOption, ViewMode = AM.Model.Enums.ViewModes.Search }) }, JsonRequestBehavior.AllowGet);
+            }
+
+            model.ViewingPage = AM.Model.Enums.ViewingPage.UserList;
+
             return View(model);
+
+            // }
+        }
+
+        public ActionResult SearchPartial(UniversalViewModel model) {
+            return PartialView(model);
         }
 
         // GET: User/Details/5
-        public ActionResult Details(Guid? guid) {
-            UniversalViewModel model = new UniversalViewModel();
-            if (guid == null) {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            model.aspnet_User = Membership.GetUser(guid);
-            ////aspnet_Users aspnet_Users = db.aspnet_Users.Find(id);
-            if (model.aspnet_User == null) {
-                return HttpNotFound();
-            }
-            return View(model);
-        }
+        //public ActionResult Details(Guid? guid) {
+        //    UniversalViewModel model = new UniversalViewModel();
+        //    if (guid == null) {
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    }
+        //    model.aspnet_User = Membership.GetUser(guid);
+        //    ////aspnet_Users aspnet_Users = db.aspnet_Users.Find(id);
+        //    if (model.aspnet_User == null) {
+        //        return HttpNotFound();
+        //    }
+        //    return View(model);
+        //}
 
         // GET: /Account/Register
         [AllowAnonymous]
@@ -88,48 +138,52 @@ namespace AM.Web.Controllers {
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Create(UniversalViewModel model) {
             Context = new HttpContextWrapper(System.Web.HttpContext.Current);
 
+            model.IsSuccess = ModelState.IsValid;
+            model.StatusMsg = ModelState.ErrorMessages();
 
-
-            model.IsSuccess = true;
-            model.StatusMsg = "Your account has successfully been created!";
-
-
-
-            if (ModelState.IsValid) {
-                model.Email = model.Email.ToLower();
-
-
-                MembershipCreateStatus status;
-                MembershipUser memUser = Membership.CreateUser(model.Email, model.Password, model.Email, "Question", "Answer", true, out status);
-
-                if (status != MembershipCreateStatus.Success) {
-                    model.IsSuccess = false;
-                    model.StatusMsg = "Failed";
-                    switch (status) {
-                        // Add More Cases**
-                        case MembershipCreateStatus.DuplicateEmail:
-                        case MembershipCreateStatus.DuplicateUserName:
-                            model.StatusMsg = "Email already exists";
-                            break;
-                        case MembershipCreateStatus.InvalidPassword:
-                            model.StatusMsg = "Password is not formatted correctly";
-                            break;
-                    }
-                } else
-                    model.Guid = memUser.ProviderUserKey.ToString().ToGuid();
-
-                if (model.ViewMode == Model.Enums.ViewModes.Register) model.SelectedRole = "User";
-
-                Roles.AddUserToRole(model.Email, model.SelectedRole);
-            }
-
-            //ViewBag.UserId = new SelectList(db.aspnet_Membership, "UserId", "Password", model.UserId);
             if (model.IsSuccess)
-                return RedirectToAction("index", "users", new { area = "", isSuccess = true });
+                try {
+                    model.Email = model.Email.ToLower();
+
+                    MembershipCreateStatus status;
+                    MembershipUser memUser = Membership.CreateUser(model.Email, model.Password, model.Email, "Question", "Answer", true, out status);
+
+                    if (status != MembershipCreateStatus.Success) {
+                        model.IsSuccess = false;
+                        model.StatusMsg = "Failed";
+                        switch (status) {
+                            // Add More Cases**
+                            case MembershipCreateStatus.DuplicateEmail:
+                            case MembershipCreateStatus.DuplicateUserName:
+                                model.StatusMsg = "Email already exists";
+                                break;
+                            case MembershipCreateStatus.InvalidPassword:
+                                model.StatusMsg = "Password is not formatted correctly";
+                                break;
+                        }
+                    } else {
+                        model.Guid = memUser.ProviderUserKey.ToString().ToGuid();
+                        model.StatusMsg = "Your account has successfully been created!";
+
+                    }
+
+                    if (model.ViewMode == Model.Enums.ViewModes.Register)
+                        model.SelectedRoles.Add("User");
+
+                    Roles.AddUserToRoles(model.Email, model.SelectedRoles.ToArray());
+                } catch (Exception ex) {
+                    model.IsSuccess = false;
+                    model.StatusMsg = "Error: " + ex.Message;
+                }
+
+            model.ViewMode = Model.Enums.ViewModes.Create;
+
+            if (Request.IsAjaxRequest()) {
+                return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, ViewMode = AM.Model.Enums.ViewModes.Create }) }, JsonRequestBehavior.AllowGet);
+            }
 
             return View(RouteAction, model);
         }
@@ -145,11 +199,30 @@ namespace AM.Web.Controllers {
                 return HttpNotFound();
             }
 
-            model.ViewMode = Model.Enums.ViewModes.Edit;
 
+
+            model.Email = model.aspnet_User.Email;
+            //model.CurrentEmail = model.Email;
+            model.Guid = model.aspnet_User.ProviderUserKey.ToString().ToGuid();
+            model.ViewMode = Model.Enums.ViewModes.Edit;
             model.UserRoles = Roles.GetAllRoles().ToList();
             model.UserRoleList = new SelectList(model.UserRoles);
-            model.SelectedRole = Roles.GetRolesForUser(model.aspnet_User.UserName)[0];
+            model.SelectedRoles = Roles.GetRolesForUser(model.aspnet_User.UserName).ToList();
+
+            Profile profile = db.Profiles.FirstOrDefault(u => u.UserId == model.Guid);
+
+            if (profile.IsNotNull()) {
+                model.FirstName = profile.FirstName;
+                model.LastName = profile.LastName;
+                model.PhoneNumber = profile.PhoneNumber;
+            }
+
+
+            model.IsSuccess = true;
+
+            if (Request.IsAjaxRequest()) {
+                return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Edit", "Users", new { area = "", guid = model.Guid }) }, JsonRequestBehavior.AllowGet);
+            }
 
             return View(model);
         }
@@ -158,31 +231,85 @@ namespace AM.Web.Controllers {
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Edit(UniversalViewModel model) {
             model.IsSuccess = ModelState.IsValid;
             model.StatusMsg = ModelState.ErrorMessages();
 
-            if (!model.IsSuccess) {
+            if (model.IsSuccess) {
                 model.aspnet_User = Membership.GetUser(model.Guid);
                 if (model.aspnet_User.IsNotNull()) {
                     // TODO: Need to update username using entity framework
                     AM.Model.aspnet_Users user = db.aspnet_Users.FirstOrDefault(au => au.UserId == model.Guid);
 
+                    // Entity framework changes
                     user.UserName = model.Email.ToLower();
                     user.LoweredUserName = model.Email.ToLower();
                     user.aspnet_Membership.Email = model.Email.ToLower();
                     user.aspnet_Membership.LoweredEmail = model.Email.ToLower();
-                    model.CurrentRole = Roles.GetRolesForUser(user.UserName)[0];
 
-                    if (model.SelectedRole != model.CurrentRole) {
-                        Roles.RemoveUserFromRole(user.UserName, model.CurrentRole);
-                        Roles.AddUserToRole(user.UserName, model.SelectedRole);
+                    Profile profile = db.Profiles.FirstOrDefault(u => u.UserId == model.Guid);
+
+
+
+                    if (profile.IsNull()) {
+                        profile = new Profile() {
+                            FirstName = model.FirstName,
+                            LastName = model.LastName,
+                            PhoneNumber = model.PhoneNumber,
+                            UserId = model.Guid,
+                            Guid = Guid.NewGuid()
+                        };
+
+                        db.Profiles.Add(profile);
+
+                    } else {
+                        profile.FirstName = model.FirstName;
+                        profile.LastName = model.LastName;
+                        profile.PhoneNumber = model.PhoneNumber;
                     }
-                    //Membership.UpdateUser(model.aspnet_User);
+
                     db.SaveChanges();
 
-                    return RedirectToAction("Index");
+                    if (Roles.GetRolesForUser(user.UserName).IsNullOrEmpty()) {
+                        model.CurrentRole = "";
+                    } else {
+                        model.CurrentRole = Roles.GetRolesForUser(user.UserName)[0];
+
+                    }
+
+                    try {
+                        List<String> assignedRoles = Roles.GetRolesForUser(user.UserName).ToList();
+                        List<String> rolesToRemove = assignedRoles.Where(r => !model.SelectedRoles.Contains(r)).ToList();
+                        List<String> rolesToAdd = model.SelectedRoles.Where(r => !assignedRoles.Contains(r)).ToList();
+
+                        if (rolesToAdd.IsNotNullOrEmpty()) {
+                            Roles.AddUserToRoles(user.UserName, rolesToAdd.ToArray());
+                        }
+
+                        if (rolesToRemove.IsNotNullOrEmpty()) {
+                            Roles.RemoveUserFromRoles(user.UserName, rolesToRemove.ToArray());
+
+                        }
+
+                        // Other way
+                        //for (int i = 0; i < assignedRoles.Count(); i++) {
+                        //    if (!model.SelectedRoles.Contains(assignedRoles[i])) {
+                        //        Roles.RemoveUserFromRole(user.UserName, assignedRoles[i]);
+                        //    }
+                        //}
+                    } catch (Exception ex) {
+                        model.IsSuccess = false;
+                        model.StatusMsg = "Error: " + ex.Message;
+                    }
+
+
+                    // TODO: Change role assignment from singular to plural. Add all new roles to list, and new model list to roles, then remove roles from the difference of whats currently there.
+                    //if (model.SelectedRoles != model.CurrentRole) {
+                    //    Roles.RemoveUserFromRole(user.UserName, model.CurrentRole);
+                    //    Roles.AddUserToRole(user.UserName, model.SelectedRole);
+                    //}
+
+                    //return RedirectToAction("Index", new { IsSuccess = true, ViewMode = AM.Model.Enums.ViewModes.Edit });
                 } else {
                     model.IsSuccess = false;
                     //model.StatusMsg = "User with email " + model.Email.ToLower() + ", no longer exists. Please return to the Users Listing.";
@@ -190,35 +317,89 @@ namespace AM.Web.Controllers {
                 }
             }
 
+            model.UserRoles = Roles.GetAllRoles().ToList();
+            model.UserRoleList = new SelectList(model.UserRoles);
+
             model.ViewMode = Model.Enums.ViewModes.Edit;
+
+            if (Request.IsAjaxRequest()) {
+                return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, ViewMode = AM.Model.Enums.ViewModes.Edit }) }, JsonRequestBehavior.AllowGet);
+            }
 
             return View(model);
         }
 
         // GET: User/Delete/5
-        public ActionResult Delete(Guid? guid) {
-            UniversalViewModel model = new UniversalViewModel();
-            if (guid == null) {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            model.aspnet_User = Membership.GetUser(guid);
-            if (model.aspnet_User == null) {
-                return HttpNotFound();
-            }
-            return View(model);
-        }
+        //public ActionResult Delete(Guid? guid) {
+        //    UniversalViewModel model = new UniversalViewModel();
+        //    if (guid == null) {
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    }
+        //    model.aspnet_User = Membership.GetUser(guid);
+        //    if (model.aspnet_User == null) {
+        //        return HttpNotFound();
+        //    }
+        //    return View(model);
+        //}
 
         // POST: User/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(Guid? guid) {
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public ActionResult Delete(Guid? guid) {
             UniversalViewModel model = new UniversalViewModel();
             model.aspnet_User = Membership.GetUser(guid);
 
             Membership.DeleteUser(model.aspnet_User.ToString());
             //model.SaveChanges();
-            return RedirectToAction("Index");
+            model.IsSuccess = true;
+
+            if (Request.IsAjaxRequest()) {
+                return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, ViewMode = AM.Model.Enums.ViewModes.Delete }) }, JsonRequestBehavior.AllowGet);
+            }
+
+            return RedirectToAction("Index", new { IsSuccess = true, ViewMode = AM.Model.Enums.ViewModes.Delete });
         }
+
+        //[HttpPost]
+        public ActionResult ChangePassword(UniversalViewModel model) {
+            if (model.ViewingPage != AM.Model.Enums.ViewingPage.Home) {
+                model.IsSuccess = true;
+                model.StatusMsg = ModelState.ErrorMessages();
+
+                if (model.IsSuccess) {
+                    MembershipUser u = Membership.GetUser(model.Guid);
+                    u.ChangePassword(u.ResetPassword(), model.Password);
+
+                    model.Password = "";
+                    model.ConfirmPassword = "";
+
+                    if (Request.IsAjaxRequest()) {
+                        return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+
+            }
+
+            return PartialView(model);
+        }
+
+        //// POST: User/Delete/5
+        //[HttpPost, ActionName("Delete")]
+        ////[ValidateAntiForgeryToken]
+        //public ActionResult DeleteConfirmed(Guid? guid) {
+        //    UniversalViewModel model = new UniversalViewModel();
+        //    model.aspnet_User = Membership.GetUser(guid);
+
+        //    Membership.DeleteUser(model.aspnet_User.ToString());
+        //    //model.SaveChanges();
+        //    model.IsSuccess = true;
+
+        //    if (Request.IsAjaxRequest()) {
+        //        return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, ViewMode = AM.Model.Enums.ViewModes.Delete }) }, JsonRequestBehavior.AllowGet);
+        //    }
+
+        //    return RedirectToAction("Index", new { IsSuccess = true, ViewMode = AM.Model.Enums.ViewModes.Delete });
+        //}
 
         //protected override void Dispose(bool disposing) {
         //    if (disposing) {

@@ -18,6 +18,7 @@ namespace AM.Model
         public aspnet_Users()
         {
             this.aspnet_Roles = new HashSet<aspnet_Roles>();
+            this.Profiles = new HashSet<Profile>();
         }
     
         public System.Guid ApplicationId { get; set; }
@@ -31,5 +32,7 @@ namespace AM.Model
         public virtual aspnet_Membership aspnet_Membership { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<aspnet_Roles> aspnet_Roles { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Profile> Profiles { get; set; }
     }
 }

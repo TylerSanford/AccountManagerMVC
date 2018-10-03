@@ -3,11 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
+using AM.Web.Models;
 
 namespace AM.Web.Controllers {
     public class HomeController : Controller {
         public ActionResult Index() {
-            return View();
+            UniversalViewModel model = new UniversalViewModel();
+
+            model.UserCount = Membership.GetAllUsers().Count;
+            model.UsersOnline = Membership.GetNumberOfUsersOnline();
+
+            return View(model);
         }
 
         public ActionResult About() {

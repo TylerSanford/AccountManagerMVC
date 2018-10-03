@@ -55,7 +55,7 @@ namespace AM.Web.Controllers {
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public ActionResult SignIn(AM.Web.Models.UniversalViewModel model, string returnUrl) {
             if (Membership.ValidateUser(model.Email, model.Password)) {
                 FormsAuthentication.SetAuthCookie(model.Email, model.RememberMe);
@@ -65,12 +65,19 @@ namespace AM.Web.Controllers {
                 } else {
                     // for return url that is not local (external website)
                     // may add external redirector at some point (for tracking external exit points)
+                    model.IsSuccess = true;
+
+                    if (Request.IsAjaxRequest()) {
+                        return Json(new { IsSuccess = model.IsSuccess, StatusMsg = model.StatusMsg, RedirectUrl = Url.Action("Index", "Users", new { area = "", IsSuccess = model.IsSuccess, ViewPage = AM.Model.Enums.ViewingPage.Login }) }, JsonRequestBehavior.AllowGet);
+                    }
+
                     return RedirectToAction("index", "users", new { area = "" });
                 }
             }
 
             // If we got this far, something failed, redisplay form
             ModelState.AddModelError("", "The email or password provided is incorrect.");
+
 
             return View("Login", model);
         }

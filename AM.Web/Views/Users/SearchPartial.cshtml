@@ -1,0 +1,41 @@
+﻿@model AM.Web.Models.UniversalViewModel
+@{ Layout = null; }
+
+<style>
+    form {
+        display: flex; /* 2. display flex to the rescue */
+        flex-direction: row;
+        margin: 5px;
+    }
+
+    input, b {
+        display: block; /* 1. oh noes, my inputs are styled as block... */
+        margin-left: 5px;
+        padding-top: 3px;
+    }
+
+    #SearchString {
+        margin-left: 10px;
+    }
+
+    label {
+        padding: 3px;
+    }
+</style>
+
+
+@using (Html.BeginForm("Index", "Users", new { }, FormMethod.Post, new { style = "display: flex-row" })) {
+    
+        <b>Search</b>
+
+        @Html.RadioButton("SearchOption", "Email", true)<label class="form-check-label">Email</label>
+        @Html.RadioButton("SearchOption", "Role", false)<label class="form-check-label">Role</label>
+
+
+        @Html.TextBoxFor(m => Model.SearchString, new { @class = "form-control" })
+        <button type="submit" name="submit" value="Search" class="btn btn-primary">Search</button>
+        <input type="submit" name="ClearSearch" value="Clear" class="btn btn-secondary" />
+
+
+    
+}

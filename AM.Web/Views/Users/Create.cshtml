@@ -1,5 +1,6 @@
 ﻿@model AM.Web.Models.UniversalViewModel
 @using PJX.Core.Extensions
+@using AM.Model.Enums
 
 @{
     ViewBag.Title = Model.ViewMode.ToString();
@@ -10,10 +11,64 @@
 @Html.Action("CreateForm", "users", new { area = "", model = Model })
 
 
-<div>
+@*<div>
     @Html.ActionLink("Back to List", "Index")
-</div>
+</div>*@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $("#user-manage button[type=submit]").on("click", function () {
+            var data = {
+                Email: $("#Email").val(),
+                Password: $("#Password").val(),
+                ConfirmPassword: $("#ConfirmPassword").val(),
+                SelectedRoles: [],
+                ViewingPage: "@ViewingPage.UserCreate"
+            };
+
+            var selectedRoles = [];
+
+            $("#user-manage input[type=checkbox][name=SelectedRole]:checked").each(function () {
+                selectedRoles.push($(this).val());
+            });
+
+            data.SelectedRoles = selectedRoles;
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("create", "users", new { area = "" })',
+                data: data,
+                //dataType: "json",
+                cache: false,
+                success: function (result) {
+                    //if (typeof (result) === "object") {     // JSON
+                    if (!result.IsSuccess) {
+                        if (result.StatusMsg !== null &&
+                            result.StatusMsg !== "")
+                             toastr.warning(result.StatusMsg);
+                        else
+                            toastr.warning("AJAX ERROR: There was a problem processing your request.");
+
+                    } else {
+                        document.location.href = result.RedirectUrl;
+                    }
+                    //} else {                                // HTML
+                    //    //$("#profile-listing").fadeOut().find("tbody").empty().append(result).promise().done(function () {
+                    //    //});
+                    //}
+                },
+                fail: function (result) {
+
+                    if (result.StatusMsg !== null &&
+                        result.StatusMsg !== "")
+                        toastr.warning(result.StatusMsg);
+                    else
+                        toastr.warning("AJAX ERROR: There was a problem processing your request.");
+                }
+            });
+            return false;
+        });
+    </script>
 }

@@ -1,59 +1,260 @@
 ﻿@model AM.Web.Models.UniversalViewModel
 @using PJX.Core.Extensions
+@using AM.Model.Enums
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "User Manager";
 }
 
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "create", "users", new { area = "" }, new { })
-</p>
-<table class="table">
-    <tr>
-        <th>
-            Email
-        </th>
-        <th>
-            Active
-        </th>
-        <th>
-            Roles
-        </th>
-        <th>
-            Register Date
-        </th>
-        <th></th>
-    </tr>
-    @foreach (MembershipUser item in Model.aspnet_Users) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsApproved)
-            </td>
-            <td>
-                @String.Join(", ", item.Roles())
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreationDate)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "edit", new { guid = item.ProviderUserKey.ToString() }) |
-               @* @Html.ActionLink("Details", "details", new { guid = item.ProviderUserKey.ToString() }) |*@
-                @Html.ActionLink("Delete", "delete", new { guid = item.ProviderUserKey.ToString() })
-            </td>
-        </tr>
+<style>
+    button {
+        border: none;
+        cursor: pointer;
     }
+</style>
 
-</table>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.2/b-print-1.5.2/cr-1.5.0/r-2.2.2/datatables.min.css" />
+
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.2/b-print-1.5.2/cr-1.5.0/r-2.2.2/datatables.min.js"></script>
+
+
+<div id="user-list">
+    <h2>User Manager</h2>
+
+    <p>
+        @Html.ActionLink("Create New User", "create", "users", new { area = "" }, new { @class = "btn btn-success btn-sm" })
+
+    </p>
+
+    @*@using (Html.BeginForm("Index", "Users", FormMethod.Get)) {
+            <b>Search</b>
+            @Html.RadioButton("SearchOption", "Email", true) <text>Email</text>
+            @Html.RadioButton("SearchOption", "Role")<text>Role</text>
+            @Html.TextBox("SearchString") <input type="submit" name="submit" value="Search" />
+            <input type="submit" name="ClearSearch" value="Clear" />
+        }*@
+
+    @*@Html.Action("SearchPartial", "Users", new { area = "", model = Model })*@
+
+    <table id="user-table" class="table">
+        <thead>
+            <tr>
+                <th>
+                    Email
+                </th>
+                <th>
+                    Active
+                </th>
+                <th>
+                    Locked
+                </th>
+                <th>
+                    Roles
+                </th>
+                <th>
+                    Creation Date
+                </th>
+                <th>
+                    Last Activity
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (MembershipUser item in Model.aspnet_Users) {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IsApproved)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IsLockedOut)
+                    </td>
+                    <td>
+                        @String.Join(", ", item.Roles())
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreationDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastActivityDate)
+                    </td>
+                    <td>
+                        @*@Html.ActionLink("Edit", "edit", new { guid = item.ProviderUserKey.ToString() }) |*@
+
+                        @*<a href="Users/@item.ProviderUserKey.ToString()/Edit"><span class="badge badge-pill badge-primary">Edit</span></a> |*@
+                        <button class="badge badge-primary" type="button" id="user-edit" value="@item.ProviderUserKey.ToString()">Edit</button> |
+                        @* @Html.ActionLink("Details", "details", new { guid = item.ProviderUserKey.ToString() }) |*@
+                        @*<span onclick="return confirm('Are you sure to delete?')"><a href="/Roles/Delete?RoleName=@role" class="delLink" style="color:red;">Delete</a></span>*@
+                        @*@Html.ActionLink("Delete", "delete", new { guid = item.ProviderUserKey.ToString() }, new { style = "color: red" })*@
+                        <button class="badge badge-danger" type="button" id="user-delete" value="@item.ProviderUserKey.ToString()">Delete</button>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+</div>
 
 @section scripts{
-    @if (Model.IsSuccess) {
+    @if (Model.IsSuccess && Model.ViewMode == AM.Model.Enums.ViewModes.Create) {
         <script>
-            toastr.success("Account Successfully Created!");
+            toastr.success("Account Successfully @(Model.ViewMode)d!");
+        </script>
+    } else if (Model.IsSuccess && Model.ViewMode == AM.Model.Enums.ViewModes.Register && Model.ViewingPage != AM.Model.Enums.ViewingPage.UserList) {
+        <script>
+            toastr.success("Account Successfully @(Model.ViewMode)ed!");
+        </script>
+    } else if (Model.IsSuccess && Model.ViewMode == AM.Model.Enums.ViewModes.Edit) {
+        <script>
+            toastr.success("Account Successfully @(Model.ViewMode)ed!");
+        </script>
+    } else if (Model.IsSuccess && Model.ViewMode == AM.Model.Enums.ViewModes.Delete) {
+        <script>
+        toastr.success("Account Successfully @(Model.ViewMode)d!");
+        </script>
+    } else if (Model.IsSuccess && Model.ViewMode == AM.Model.Enums.ViewModes.Search) {
+        <script>
+        toastr.success("@(Model.ViewMode) was successful!");
+        </script>
+    } else if (!Model.IsSuccess && Model.StatusMsg.IsNotNullOrWhiteSpace()) {
+        <script>
+            toastr.error("@Model.StatusMsg");
         </script>
     }
+
+    <script>
+
+
+        $("#user-table button[type=submit]").on("click", function () {
+            var data = {
+                SearchOption: $("#SearchOption").val(),
+                SearchString: $("#SearchString").val(),
+                ViewingPage: "@ViewingPage.UserList"
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("index", "users", new { area = "" })',
+                data: data,
+                //dataType: "json",
+                cache: false,
+                success: function (result) {
+                    //if (typeof (result) === "object") {     // JSON
+                    if (!result.IsSuccess) {
+                        if (result.StatusMsg !== null &&
+                            result.StatusMsg !== "")
+                             toastr.warning(result.StatusMsg);
+                        else
+                            toastr.warning("AJAX ERROR: There was a problem processing your request.");
+
+                    } else {
+                        document.location.href = result.RedirectUrl;
+                    }
+                    //} else {                                // HTML
+                    //    //$("#profile-listing").fadeOut().find("tbody").empty().append(result).promise().done(function () {
+                    //    //});
+                    //}
+                },
+                fail: function (result) {
+
+                    if (result.StatusMsg !== null &&
+                        result.StatusMsg !== "")
+                        toastr.warning(result.StatusMsg);
+                    else
+                        toastr.warning("AJAX ERROR: There was a problem processing your request.");
+                }
+            });
+            return false;
+        });
+
+        $("#user-table").on("click", "#user-delete", function () {
+            var guid = $("#user-delete").val();
+            var data = {
+                guid: guid,
+                ViewingPage: "@ViewingPage.UserDelete"
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("delete", "users", new { area = "" })',
+                data: data,
+                //dataType: "json",
+                cache: false,
+                success: function (result) {
+                    //if (typeof (result) === "object") {     // JSON
+                    if (!result.IsSuccess) {
+                        if (result.StatusMsg !== null &&
+                            result.StatusMsg !== "")
+                             toastr.warning(result.StatusMsg);
+                        else
+                            toastr.warning("AJAX ERROR: There was a problem processing your request.");
+
+                    } else {
+                        document.location.href = result.RedirectUrl;
+                    }
+                    //} else {                                // HTML
+                    //    //$("#profile-listing").fadeOut().find("tbody").empty().append(result).promise().done(function () {
+                    //    //});
+                    //}
+                },
+                fail: function (result) {
+
+                    if (result.StatusMsg !== null &&
+                        result.StatusMsg !== "")
+                        toastr.warning(result.StatusMsg);
+                    else
+                        toastr.warning("AJAX ERROR: There was a problem processing your request.");
+                }
+            });
+        });
+
+        $("#user-table").on("click", "#user-edit", function () {
+            var guidVal = $("#user-edit").val();
+            var data = {
+                guid: guidVal,
+                ViewingPage: "@ViewingPage.UserEdit"
+            };
+
+            $.ajax({
+                type: 'GET',
+                url: `/Users/${guidVal}/Edit`,
+                data: data,
+                //dataType: "json",
+                cache: false,
+                success: function (result) {
+                    //if (typeof (result) === "object") {     // JSON
+                    if (!result.IsSuccess) {
+                        if (result.StatusMsg !== null &&
+                            result.StatusMsg !== "")
+                             toastr.warning(result.StatusMsg);
+                        else
+                            toastr.warning("AJAX ERROR: There was a problem processing your request.");
+
+                    } else {
+                        document.location.href = result.RedirectUrl;
+                    }
+                    //} else {                                // HTML
+                    //    //$("#profile-listing").fadeOut().find("tbody").empty().append(result).promise().done(function () {
+                    //    //});
+                    //}
+                },
+                fail: function (result) {
+
+                    if (result.StatusMsg !== null &&
+                        result.StatusMsg !== "")
+                        toastr.warning(result.StatusMsg);
+                    else
+                        toastr.warning("AJAX ERROR: There was a problem processing your request.");
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $('#user-table').DataTable();
+        });
+    </script>
 }

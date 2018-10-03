@@ -10,6 +10,8 @@
         <EntityTypeShape EntityType="AM.Model.aspnet_Users" Width="1.5" PointX="3" PointY="2.375" IsExpanded="true" />
         <AssociationConnector Association="AM.Model.FK__aspnet_Me__UserI__3B75D760" ManuallyRouted="false" />
         <AssociationConnector Association="AM.Model.aspnet_UsersInRoles" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="AM.Model.Profile" Width="1.5" PointX="5.25" PointY="7.125" />
+        <AssociationConnector Association="AM.Model.FK_Profile_aspnet_Users" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

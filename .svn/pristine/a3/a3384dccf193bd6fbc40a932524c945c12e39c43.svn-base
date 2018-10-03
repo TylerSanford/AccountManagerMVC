@@ -1,0 +1,9 @@
+﻿@using AM.Web.Models
+@model UniversalViewModel
+@{
+    Layout = null;
+}
+
+<div class="col-md-10">
+    @Html.DropDownListFor(m => m.SelectedRole, Model.UserRoleList, "Choose a Role..", new { @class = "form-control" })
+</div>

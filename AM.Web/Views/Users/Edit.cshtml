@@ -1,5 +1,6 @@
 ﻿@using AM.Web.Models
 @using PJX.Core.Extensions
+@using AM.Model.Enums
 @model UniversalViewModel
 
 @{
@@ -8,30 +9,118 @@
 
 <h2>Edit</h2>
 
+<style>
+    .blur {
+        filter: blur(5px);
+        -webkit-filter: blur(5px);
+        -moz-filter: blur(5px);
+        -o-filter: blur(5px);
+        -ms-filter: blur(5px);
+    }
 
-@using (Html.BeginForm()) {
+    .modal {
+        text-align: center;
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+
+    .modal-dialog {
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .vertical-alignment-helper {
+        display: table;
+        height: 100%;
+        width: 100%;
+        pointer-events: none; /* This makes sure that we can still click outside of the modal to close it */
+    }
+
+    .vertical-align-center {
+        /* To center vertically */
+        display: table-cell;
+        vertical-align: middle;
+        pointer-events: none;
+    }
+</style>
+<div id="edit-password-popup" class="modal">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" id="popup-close" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @Html.Action("ChangePassword", "Users", new { area = "", model = Model })
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@using (Html.BeginForm("edit", "users", new { area = "" }, FormMethod.Post, new { id = "user-manage" })) {
+
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.ViewMode)
 
-    <div class="form-horizontal">
-        <h4>aspnet_Users</h4>
+
+    <div id="edit-body" class="form-horizontal">
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        @Html.Hidden("Guid", Model.aspnet_User.ProviderUserKey)
+        @Html.Hidden("Guid", Model.Guid)
+        <input type="hidden" id="IsUserEdit" name="IsUserEdit" value="true" />
 
         <div class="form-group">
-            @Html.LabelFor(model => model.aspnet_User.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "col-form-label col-md-2" })
             <div class="col-md-10">
-                @Html.TextBox("Email", Model.aspnet_User.Email, new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.aspnet_User.Email, "", new { @class = "text-danger" })
+                @Html.TextBox("Email", Model.Email, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(m => m.SelectedRole, new { @class = "col-md-2 control-label" })
+            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "col-form-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownListFor(m => m.SelectedRole, Model.UserRoleList, "Choose a Role..", new { @class = "form-control" })
+                @Html.TextBox("FirstName", Model.FirstName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "col-form-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBox("LastName", Model.LastName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "col-form-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBox("PhoneNumber", Model.PhoneNumber, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-10">
+                <span id="edit-password" class="btn btn-warning btn-sm">Change Password</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.SelectedRoles, new { @class = "col-md-2 col-form-label" })
+            <div class="col-md-10">
+                @Html.Action("RolesSelect", "FormControls", new { area = "", model = Model })
             </div>
         </div>
 
@@ -46,17 +135,96 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="/Users" class="btn btn-danger">Back</a>
+
             </div>
         </div>
     </div>
-    
+
 }
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>
+@*<div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>*@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    @if (!Model.IsSuccess && Model.StatusMsg.IsNotNullOrWhiteSpace()) {
+        <script>
+            toastr.warning("@Model.StatusMsg");
+        </script>
+    }
+
+    <script>
+        $("#user-manage button[type=submit]").on("click", function () {
+            var data = {
+                Guid: $("#Guid").val(),
+                Email: $("#Email").val(),
+                FirstName: $("#FirstName").val(),
+                LastName: $("#LastName").val(),
+                PhoneNumber: $("#PhoneNumber").val(),
+                SelectedRoles: [],
+                ViewingPage: "@ViewingPage.UserEdit"
+            };
+
+            var selectedRoles = [];
+            $("#user-manage input[type=checkbox][name=SelectedRole]:checked").each(function () {
+
+                selectedRoles.push($(this).val());
+            });
+
+            data.SelectedRoles = selectedRoles;
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Edit", "Users", new { area = "" })',
+                data: data,
+                //dataType: "json",
+                cache: false,
+                success: function (result) {
+                    //if (typeof (result) === "object") {     // JSON
+                    if (!result.IsSuccess) {
+                        if (result.StatusMsg !== null &&
+                            result.StatusMsg !== "")
+                             toastr.warning(result.StatusMsg);
+                        else
+                            toastr.warning("AJAX ERROR: There was a problem processing your request.");
+
+                    } else {
+                        document.location.href = result.RedirectUrl;
+                    }
+                    //} else {                                // HTML
+                    //    //$("#profile-listing").fadeOut().find("tbody").empty().append(result).promise().done(function () {
+                    //    //});
+                    //}
+                },
+                fail: function (result) {
+
+                    if (result.StatusMsg !== null &&
+                        result.StatusMsg !== "")
+                        toastr.warning(result.StatusMsg);
+                    else
+                        toastr.warning("AJAX ERROR: There was a problem processing your request.");
+                }
+            });
+            return false;
+        });
+
+
+        $("#edit-password").on("click", function () {
+            $("#edit-body").addClass("blur");
+            $("#edit-password-popup").show();
+        });
+
+        $("#popup-close").on("click", function () {
+            $("#edit-body").removeClass("blur");
+            $("#edit-password-popup").hide();
+        });
+
+
+
+    </script>
 }
+
+

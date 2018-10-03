@@ -28,5 +28,6 @@ namespace AM.Model
         public virtual DbSet<aspnet_Membership> aspnet_Membership { get; set; }
         public virtual DbSet<aspnet_Roles> aspnet_Roles { get; set; }
         public virtual DbSet<aspnet_Users> aspnet_Users { get; set; }
+        public virtual DbSet<Profile> Profiles { get; set; }
     }
 }

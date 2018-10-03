@@ -1,0 +1,25 @@
+﻿@using AM.Web.Models
+@using PJX.Core.Extensions
+@model UniversalViewModel
+@{
+    ViewBag.Title = "Edit Roles";
+}
+
+<h2>Edit Role</h2>
+
+@Html.ActionLink("Return to Role Manager", "Index")
+<hr />
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(model => model.RoleId)
+    <div>
+        Role name
+    </div>
+    <p>
+        @Html.TextBoxFor(model => model.Role)
+    </p>
+
+
+    <input type="submit" value="Save" />
+}

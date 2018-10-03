@@ -5,53 +5,249 @@
     Layout = null;
 }
 
-@using (Html.BeginForm("create", "users", new { area = "" }, FormMethod.Post, new { @class = "form" })) {
-    @Html.AntiForgeryToken()
+<style>
+    .color-red {
+        color: red;
+    }
+
+    .color-green {
+        color: green;
+    }
+
+    .form-container hr {
+        width: 80%;
+    }
+
+    .t-row {
+        display: flex;
+        flex-direction: row;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
+
+        .t-row:last-child {
+            display: flex;
+            flex-direction: column;
+        }
+
+    input[type=password] {
+        width: 100%;
+    }
+
+    .left-col {
+        align-items: center;
+        width: 40%;
+        justify-content: flex-end;
+        padding-left: 60px;
+    }
+
+    .right-col {
+        width: 40%;
+        align-self: center;
+        padding-left: 80px;
+    }
+
+    .center-col {
+        /*margin-left: auto;*/
+        /*margin-right: auto;*/
+        /*justify-content: center;*/
+        /*align-items: center;*/
+        text-align: center;
+    }
+</style>
+
+@using (Html.BeginForm("create", "users", new { area = "" }, FormMethod.Post, new { id = "user-manage", @class = "form" })) {
     @Html.HiddenFor(m => m.ViewMode)
+    <input type="hidden" id="IsUserEdit" name="IsUserEdit" value="true" />
 
     <div class="form-horizontal">
         <h4>@Model.ViewMode a new account.</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        <div class="form-group">
-            @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
-            <div class="col-md-10">
-                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
-            <div class="col-md-10">
-                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
-            </div>
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
-            <div class="col-md-10">
-                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
-            </div>
-        </div>
-        @if (Model.ViewMode == AM.Model.Enums.ViewModes.Create) {
-            <div class="form-group">
-                @Html.LabelFor(m => m.SelectedRole, new { @class = "col-md-2 control-label" })
-                <div class="col-md-10">
-                    @Html.DropDownListFor(m => m.SelectedRole, Model.UserRoleList, "Choose a Role..", new { @class = "form-control" })
+
+        <div class="form-container">
+            <div class="t-row">
+                <div class="left-col">
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            @Html.LabelFor(m => m.Email, new { @class = "control-label" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <i id="email-validate" class="fas fa-times color-red"></i> Valid Email<br />
                 </div>
             </div>
-        }
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+            <hr />
+            <div class="t-row">
+                <div class="left-col">
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            @Html.LabelFor(m => m.Password, new { @class = "control-label" })
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <i id="pass-upper" class="fas fa-times color-red"></i> Minimum 1 Uppercase<br />
+                    <i id="pass-lower" class="fas fa-times color-red"></i> Minimum 1 Lowercase<br />
+                    <i id="pass-number" class="fas fa-times color-red"></i> Minimum 1 Number<br />
+                    <i id="pass-character" class="fas fa-times color-red"></i> Minimum 1 Special Character<br />
+                    <i id="pass-length" class="fas fa-times color-red"></i> Minimum 8 Characters Long<br />
+                </div>
             </div>
+            <hr />
+            <div class="t-row">
+                <div class="left-col">
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            @Html.LabelFor(m => m.ConfirmPassword, new { @class = "control-label" })
+                            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="right-col">
+                    <i id="confirmPass-upper" class="fas fa-times color-red"></i> Minimum 1 Uppercase<br />
+                    <i id="confirmPass-lower" class="fas fa-times color-red"></i> Minimum 1 Lowercase<br />
+                    <i id="confirmPass-number" class="fas fa-times color-red"></i> Minimum 1 Number<br />
+                    <i id="confirmPass-character" class="fas fa-times color-red"></i> Minimum 1 Special Character<br />
+                    <i id="confirmPass-length" class="fas fa-times color-red"></i> Minimum 8 Characters Long<br />
+                </div>
+            </div>
+
+            @if (Model.ViewMode == AM.Model.Enums.ViewModes.Create) {
+                <hr />
+                <div class="t-row">
+                    <div class="center-col">
+                        @*@Html.LabelFor(m => m.SelectedRoles, new { @class = "col-md-2 control-label" })*@
+                        @Html.Action("RolesSelect", "FormControls", new { area = "", model = Model })
+
+                    </div>
+                </div>
+            }
+            <hr />
+            <div class="t-row">
+                <div class="center-col">
+
+                    <div class="form-group">
+                        <button id="submit-button" type="submit" class="btn btn-primary" disabled>Create</button>
+                        @if (Model.ViewMode == AM.Model.Enums.ViewModes.Create) {
+                            <a href="/Users" class="btn btn-warning">Back To User List</a>
+                        } else {
+                            <a href="/Account/Login" class="btn btn-warning">Back To Log In</a>
+                        }
+
+
+
+
+                    </div>
+
+                </div>
+            </div>
+
         </div>
+
+
+
+
+
+
 
         @if (Model.StatusMsg.IsNotNullOrWhiteSpace()) {
             <div class="form-group">
                 @Model.StatusMsg
-
             </div>
         }
 
     </div>
 }
+
+<script>
+    let pComplete = false;
+    let cPComplete = false;
+    let eComplete = false;
+    let match = false;
+
+    let pattern = {
+        upper: /(?=.*?[A-Z])/,
+        lower: /(?=.*?[a-z])/,
+        number: /(?=.*?[0-9])/,
+        character: /(?=.*?[#?!@@$%^&*-])/,
+        length: /^.{8,}/,
+        all: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@@$%^&*-]).{8,}$/,
+        email: /^[^\s@@]+@@[^\s@@]+\.[^\s@@]{2,}$/
+    };
+
+    let iconChange = function (testCase, val, type) {
+        if (testCase.test($("#" + type).val())) {
+            $("#" + val).addClass("color-green fa-check").removeClass("color-red fa-times");
+        } else {
+            $("#" + val).addClass("color-red fa-times").removeClass("color-green fa-check");
+        }
+    };
+
+    let completeCheck = function () {
+        if (pComplete && cPComplete && $("#Password").val() === $("#ConfirmPassword").val() && eComplete) {
+            $("#submit-button").prop('disabled', false);
+        } else {
+            $("#submit-button").prop('disabled', true);
+        }
+
+        return;
+    };
+
+    $("#Email").on("keyup", function (k) {
+        iconChange(pattern.email, "email-validate", "Email");
+
+        if (pattern.email.test($("#Email").val())) {
+            eComplete = true;
+        } else {
+            eComplete = false;
+        }
+
+        completeCheck();
+    });
+
+    $("#Password").on("keyup", function (k) {
+        iconChange(pattern.upper, "pass-upper", "Password");
+        iconChange(pattern.lower, "pass-lower", "Password");
+        iconChange(pattern.number, "pass-number", "Password");
+        iconChange(pattern.character, "pass-character", "Password");
+        iconChange(pattern.length, "pass-length", "Password");
+
+        if (pattern.all.test($("#Password").val())) {
+            pComplete = true;
+        } else {
+            cPComplete = false;
+        }
+
+        completeCheck();
+    });
+
+    $("#ConfirmPassword").on("keyup", function (k) {
+        iconChange(pattern.upper, "confirmPass-upper", "ConfirmPassword");
+        iconChange(pattern.lower, "confirmPass-lower", "ConfirmPassword");
+        iconChange(pattern.number, "confirmPass-number", "ConfirmPassword");
+        iconChange(pattern.character, "confirmPass-character", "ConfirmPassword");
+        iconChange(pattern.length, "confirmPass-length", "ConfirmPassword");
+
+        if (pattern.all.test($("#ConfirmPassword").val())) {
+            cPComplete = true;
+        } else {
+            cPComplete = false;
+        }
+
+        completeCheck();
+    });
+</script>
+

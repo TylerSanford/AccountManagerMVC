@@ -15,6 +15,31 @@ namespace AM.Model.Enums {
     public enum ViewModes {
         Register,
         Create,
-        Edit
+        Edit,
+        Delete,
+        Search
+    }
+
+    public enum SearchOptions {
+        Email,
+        Role,
+        None
+    }
+
+    public enum ViewingPage {
+        Home,
+        Login,
+        
+        UserList,
+        UserRegister,
+        UserCreate,
+        UserEdit,
+        UserChangePassword,
+        UserDelete,
+
+        RoleList,
+        RoleCreate,
+        RoleEdit,
+        RoleDelete,
     }
 }

@@ -1,0 +1,59 @@
+﻿@using AM.Web.Models
+@using PJX.Core.Extensions
+@model UniversalViewModel
+@{
+    Layout = null;
+}
+
+<style>
+    #checkbox-block {
+        display: inline-block;
+    }
+</style>
+
+@*  OTHER WAY
+        <div class="col-md-10">
+        @Html.DropDownListFor(m => m.SelectedRole, Model.UserRoleList, "Choose a Role..", new { @class = "form-control" })
+    </div>*@
+
+<div>
+   @* <input id="SelectedRoles" type="hidden" value="@string.Join(",", Model.SelectedRoles)" />*@
+    @foreach (string r in Model.UserRoles) {
+        bool isChecked = Model.SelectedRoles.Contains(r);
+        <div for="role-@r.Slugify()" id="checkbox-block">
+            <input id="role-@r.Slugify()" type="checkbox"  name="SelectedRole" value="@r" @if (isChecked) { <text> checked</text> } />
+            @r
+        </div>
+    }
+</div>
+
+<script>
+    //    let isChecked = document.getElementsByName('SelectedRole');
+    //    let newRoles = [];
+
+    //    for (let i = 0; i < isChecked.length; i++) {
+    //        if (isChecked[i].checked) {
+    //            newRoles.push(isChecked[i].value);
+    //        }
+    //    }
+
+    //    document.querySelector('#SelectedRoles').value = newRoles.join(',');
+    //};
+
+
+    //$('input[name="SelectedRole"]').on("change", () => {
+    //    let cBox = $(this);
+    //    let role = cBox.val();
+    //    let roles = $("#SelectedRoles").val();
+    //    let rolesArray = roles.split(",");
+
+    //    if (cBox.is(":checked")) {
+    //        console.log(cBox);
+    //        //$(rolesArray).each(() => {
+    //        //    //if ($(this) === role) {
+
+    //        //    //}
+    //        //});
+    //    }
+    //});
+</script>
